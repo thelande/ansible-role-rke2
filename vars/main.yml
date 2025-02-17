@@ -1,0 +1,81 @@
+---
+
+rke2_server_port: 9345
+
+rke2_firewall_public_ports:
+  # Kubernetes API
+  - port: 6443
+    protocol: 'tcp'
+  # kubelet metrics
+  - port: 10250
+    protocol: 'tcp'
+  # node_exporter
+  - port: 9100
+    protocol: 'tcp'
+  # NodePort port range
+  - port: 30000-32767
+    protocol: 'tcp'
+  - port: 30000-32767
+    protocol: 'udp'
+  # HTTP & HTTPS
+  - port: 80
+    protocol: 'tcp'
+  - port: 443
+    protocol: 'tcp'
+  # FIXME: Figure out the correct source for these and move to internal ports
+  # etcd metrics
+  - port: 2381
+    protocol: 'tcp'
+  # kube-controller, kube-scheduler, and cloud controller metrics
+  - port: 10257-10259
+    protocol: 'tcp'
+
+rke2_firewall_internal_server_ports:
+  # RKE2 supervisor API
+  - port: 9345
+    protocol: 'tcp'
+  # metallb speaker
+  - port: 7946
+    protocol: 'tcp'
+  - port: 7946
+    protocol: 'udp'
+  # etcd client, peer, and metrics ports
+  - port: 2379-2381
+    protocol: 'tcp'
+  # kube-controller, kube-scheduler, and cloud controller metrics
+  - port: 10257-10259
+    protocol: 'tcp'
+
+rke2_firewall_internal_common_ports:
+  # Canal CNI with VXLAN
+  - port: 8472
+    protocol: 'udp'
+  # Canal CNI health checks
+  - port: 9099
+    protocol: 'tcp'
+
+rke2_firewall_source_networks:
+  # cluster-cidr
+  - source: '10.42.0.0/16'
+  # service-cidr
+  - source: '10.43.0.0/16'
+
+rke2_containerd_storage_partition: '{{ rke2_containerd_storage_device }}1'
+rke2_containerd_storage_fstype: 'ext4'
+rke2_containerd_storage_directory: '/var/lib/rancher'
+
+rke2_local_path_provisioner_storage_partition: '{{ rke2_local_path_provisioner_storage_device }}1'
+rke2_local_path_provisioner_storage_fstype: 'ext4'
+rke2_local_path_provisioner_storage_directory: '/opt/local-path-provisioner'
+
+rke2_kubeconfig: '/etc/rancher/rke2/rke2.yaml'
+rke2_token_file: '/var/lib/rancher/rke2/server/node-token'
+rke2_etcd_certs_dir: '/var/lib/rancher/rke2/server/tls/etcd'
+
+_go_arch_map:
+  aarch64: 'arm64'
+  x86_64: 'amd64'
+go_arch: '{{ _go_arch_map[ansible_architecture] }}'
+
+rke2_etcdctl_version: 'v3.4.33'
+rke2_etcdctl_url: 'https://github.com/etcd-io/etcd/releases/download/{{ rke2_etcdctl_version }}/etcd-{{ rke2_etcdctl_version }}-linux-{{ go_arch }}.tar.gz'

@@ -1,0 +1,86 @@
+---
+
+- ansible.builtin.include_tasks: precheck.yml  # noqa: name[missing]
+  when: 'rke2_server != "" or rke2_token != ""'
+
+- ansible.builtin.import_tasks: storage.yml  # noqa: name[missing]
+
+- name: Ensure required packages are installed
+  ansible.builtin.package:
+    name:
+      - 'git'
+      - 'epel-release'
+
+- name: Ensure firewall public ports are open
+  vars:
+    port_proto: '{{ item.port ~ "/" ~ item.protocol }}'
+  ansible.posix.firewalld:
+    permanent: true
+    immediate: true
+    port: '{{ port_proto }}'
+    state: 'enabled'
+    zone: 'public'
+  loop: '{{ rke2_firewall_public_ports }}'
+
+- name: Ensure firewall internal ports are open
+  vars:
+    bootstrap_addr: '{{ hostvars[groups["k8s_bootstrap"].0].ansible_default_ipv4.address }}'
+    control_addrs: '{{
+      groups.get("k8s_servers", [])
+      | map("extract", hostvars, "ansible_default_ipv4")
+      | map(attribute="address") }}'
+    agent_addrs: '{{
+      groups.get("k8s_agents", [])
+      | map("extract", hostvars, "ansible_default_ipv4")
+      | map(attribute="address") }}'
+    addrs: '{{ [bootstrap_addr] + control_addrs + agent_addrs }}'
+    ports: '{{
+      rke2_firewall_internal_common_ports
+      + ([] if rke2_mode == "agent" else rke2_firewall_internal_server_ports) }}'
+  ansible.posix.firewalld:
+    permanent: true
+    immediate: true
+    rich_rule: 'rule family="ipv4" source address="{{ item.1 }}/32" port port="{{ item.0.port }}" protocol="{{ item.0.protocol }}" accept'
+    state: 'enabled'
+    zone: 'public'
+  loop: '{{ ports | product(addrs) }}'
+
+- name: Ensure internal kubernetes CIDRs are accepted
+  ansible.posix.firewalld:
+    permanent: true
+    immediate: true
+    source: '{{ item.source }}'
+    state: 'enabled'
+    zone: 'public'
+  loop: '{{ rke2_firewall_source_networks }}'
+
+- name: Ensure rancher repository configuration exists
+  ansible.builtin.template:
+    src: 'etc/yum.repos.d/rancher.repo.j2'
+    dest: '/etc/yum.repos.d/rancher.repo'
+    mode: '0644'
+    owner: 'root'
+    group: 'root'
+
+- name: Ensure rke2 is installed
+  ansible.builtin.dnf:
+    name: 'rke2-{{ rke2_mode }}'
+    update_cache: true
+
+- name: Ensure rke2 configuration exists
+  ansible.builtin.template:
+    src: 'etc/rancher/rke2/config.yaml.j2'
+    dest: '/etc/rancher/rke2/config.yaml'
+    mode: '0600'
+    owner: 'root'
+    group: 'root'
+  notify: '{{ "Restart " ~ ("rke2-server" if rke2_mode == "server" else "rke2-agent") }}'
+
+- name: Ensure rke2 is enabled and running
+  ansible.builtin.service:
+    name: 'rke2-{{ rke2_mode }}'
+    enabled: true
+    state: 'started'
+
+- ansible.builtin.include_tasks: server.yml  # noqa: name[missing]
+  when: 'rke2_mode == "server"'

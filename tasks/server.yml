@@ -1,0 +1,52 @@
+---
+
+- name: Ensure kubectl symlink exists
+  ansible.builtin.file:
+    src: '/var/lib/rancher/rke2/bin/kubectl'
+    path: '/usr/bin/kubectl'
+    state: 'link'
+  register: '_result'
+  until: 'not _result.failed'
+  retries: 5
+  delay: 30
+
+- name: Ensure envvars are set
+  ansible.builtin.blockinfile:
+    path: '/root/.bashrc'
+    block: |
+      alias kc='kubectl'
+      export PATH="$PATH:/usr/local/bin"
+      export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+      export ETCDCTL_CACERT={{ rke2_etcd_certs_dir }}/server-ca.crt
+      export ETCDCTL_CERT={{ rke2_etcd_certs_dir }}/client.crt
+      export ETCDCTL_KEY={{ rke2_etcd_certs_dir }}/client.key
+
+- name: Ensure etcdctl directory exists
+  ansible.builtin.file:
+    path: '/usr/local/etcdctl-{{ rke2_etcdctl_version }}'
+    state: 'directory'
+    mode: '0755'
+    owner: 'root'
+    group: 'root'
+
+- name: Ensure etcdctl is downloaded
+  ansible.builtin.unarchive:
+    src: '{{ rke2_etcdctl_url }}'
+    remote_src: true
+    dest: '/usr/local/etcdctl-{{ rke2_etcdctl_version }}'
+    owner: 'root'
+    group: 'root'
+
+- name: Ensure etcdctl symlink exists
+  ansible.builtin.file:
+    path: '/usr/local/bin/etcdctl'
+    src: '/usr/local/etcdctl-{{ rke2_etcdctl_version }}/etcd-{{ rke2_etcdctl_version }}-linux-{{ go_arch }}/etcdctl'
+    state: 'link'
+    mode: '0755'
+    owner: 'root'
+    group: 'root'
+
+- name: Ensure kubernetes python package is installed
+  ansible.builtin.package:
+    name: 'python3-kubernetes'
+    state: 'present'

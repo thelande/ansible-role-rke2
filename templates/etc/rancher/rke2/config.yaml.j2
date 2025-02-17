@@ -1,0 +1,32 @@
+{{ ansible_managed | comment }}
+---
+
+selinux: true
+cni: canal
+{% if rke2_server and rke2_token -%}
+server: 'https://{{ rke2_server }}:{{ rke2_server_port }}'
+token: '{{ rke2_token }}'
+{% endif -%}
+
+{% if rke2_mode == "server" -%}
+tls-san:
+  - {{ rke2_api_vip }}
+etcd-expose-metrics: true
+kube-controller-manager-arg: '--bind-address=0.0.0.0'
+kube-cloud-controller-manager-arg: '--bind-address=0.0.0.0'
+kube-scheduler-arg: '--bind-address=0.0.0.0'
+{% endif -%}
+
+{% if rke2_labels -%}
+node-label:
+{% for label in rke2_labels %}
+  - {{ label }}
+{% endfor -%}
+{% endif -%}
+
+{% if rke2_taints -%}
+node-taint:
+{% for taint in rke2_taints %}
+  - {{ taint }}
+{% endfor -%}
+{% endif -%}

@@ -1,0 +1,10 @@
+---
+
+- name: Assert that agent required variables are set
+  ansible.builtin.assert:
+    that: '{{ item }} | length > 0'
+    quiet: true
+    fail_msg: '{{ item }} is not defined for agent.'
+  loop:
+    - 'rke2_token'
+    - 'rke2_server'

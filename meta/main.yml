@@ -1,0 +1,21 @@
+galaxy_info:
+  author: Tom Helander
+  description: RKE2
+
+  license: Apache-2.0
+
+  min_ansible_version: '2.10'
+
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+    - name: Rocky
+      versions:
+        - 'all'
+
+  galaxy_tags: []
+
+dependencies:
+  - 'ansible.posix'
+  - 'community.general'

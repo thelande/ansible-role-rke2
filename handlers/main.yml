@@ -1,0 +1,11 @@
+---
+
+- name: Restart rke2-server
+  ansible.builtin.service:
+    name: 'rke2-server.service'
+    state: 'restarted'
+
+- name: Restart rke2-agent
+  ansible.builtin.service:
+    name: 'rke2-agent.service'
+    state: 'restarted'
