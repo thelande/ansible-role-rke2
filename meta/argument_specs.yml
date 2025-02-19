@@ -1,0 +1,50 @@
+---
+
+argument_specs:
+  main:
+    options:
+      rke2_version:
+        type: 'str'
+        description: 'The version of Kubernetes to install.'
+        default: '1.31'
+
+      rke2_etcdctl_version:
+        type: 'str'
+        description: 'The version of etcdclt to install on the servers.'
+        default: 'v3.5.18'
+
+      rke2_mode:
+        type: 'str'
+        description: 'The mode of the server.'
+        choices:
+          - 'server'
+          - 'agent'
+        required: true
+
+      rke2_server:
+        type: 'str'
+        description:
+          - 'The address of the Kubernetes bootstrap server.'
+          - 'Required for non-bootstrap nodes.'
+
+      rke2_token:
+        type: 'str'
+        description:
+          - 'The registration token for non-bootstrap nodes.'
+          - 'Required for non-bootstrap nodes.'
+
+      rke2_labels:
+        type: 'list'
+        elements: 'str'
+        description:
+          - 'List of labels to apply to the server.'
+          - 'Only applies to the initial deployment. Does not alter existing labels.'
+        default: []
+
+      rke2_taints:
+        type: 'list'
+        elements: 'str'
+        description:
+          - 'List of taints to apply to the server.'
+          - 'Only applies to the initial deployment. Does not alter existing taints.'
+        default: []
