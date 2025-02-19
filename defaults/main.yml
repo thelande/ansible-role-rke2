@@ -8,6 +8,3 @@ rke2_token: ''
 
 rke2_labels: []
 rke2_taints: []
-
-rke2_containerd_storage_device: ''
-rke2_local_path_provisioner_storage_device: ''

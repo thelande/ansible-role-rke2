@@ -3,13 +3,10 @@
 - ansible.builtin.include_tasks: precheck.yml  # noqa: name[missing]
   when: 'rke2_server != "" or rke2_token != ""'
 
-- ansible.builtin.import_tasks: storage.yml  # noqa: name[missing]
-
-- name: Ensure required packages are installed
+- name: Ensure epel-release is installed for non-RHEL distributions
   ansible.builtin.package:
-    name:
-      - 'git'
-      - 'epel-release'
+    name: 'epel-release'
+  when: 'ansible_distribution != "RedHat"'
 
 - name: Ensure firewall public ports are open
   vars:
