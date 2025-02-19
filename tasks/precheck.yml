@@ -1,5 +1,11 @@
 ---
 
+- name: Assert supported operating system distribution
+  ansible.builtin.assert:
+    that: 'ansible_os_family == "RedHat"'
+    quiet: true
+    fail_msg: 'Unsupported OS distribution: {{ ansible_os_family }}'
+
 - name: Assert that agent required variables are set
   ansible.builtin.assert:
     that: '{{ item }} | length > 0'
