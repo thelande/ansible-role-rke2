@@ -77,5 +77,4 @@ _go_arch_map:
   x86_64: 'amd64'
 go_arch: '{{ _go_arch_map[ansible_architecture] }}'
 
-rke2_etcdctl_version: 'v3.4.33'
 rke2_etcdctl_url: 'https://github.com/etcd-io/etcd/releases/download/{{ rke2_etcdctl_version }}/etcd-{{ rke2_etcdctl_version }}-linux-{{ go_arch }}.tar.gz'
