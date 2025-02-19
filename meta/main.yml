@@ -1,6 +1,6 @@
 galaxy_info:
   author: Tom Helander
-  description: RKE2
+  description: RKE2 installation role.
 
   license: Apache-2.0
 
