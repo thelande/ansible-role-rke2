@@ -1,0 +1,56 @@
+---
+
+- name: Ensure firewall packages are installed
+  ansible.builtin.package:
+    name:
+      - 'firewalld'
+      - 'python3-firewall'
+
+- name: Ensure firewalld is enabled and running
+  ansible.builtin.service:
+    name: 'firewalld'
+    state: 'started'
+    enabled: true
+
+- name: Ensure firewall public ports are open
+  vars:
+    port_proto: '{{ item.port ~ "/" ~ item.protocol }}'
+  ansible.posix.firewalld:
+    permanent: true
+    immediate: true
+    port: '{{ port_proto }}'
+    state: 'enabled'
+    zone: 'public'
+  loop: '{{ rke2_firewall_public_ports }}'
+
+- name: Ensure firewall internal ports are open
+  vars:
+    bootstrap_addr: '{{ hostvars[groups["k8s_bootstrap"].0].ansible_default_ipv4.address }}'
+    control_addrs: '{{
+      groups.get("k8s_servers", [])
+      | map("extract", hostvars, "ansible_default_ipv4")
+      | map(attribute="address") }}'
+    agent_addrs: '{{
+      groups.get("k8s_agents", [])
+      | map("extract", hostvars, "ansible_default_ipv4")
+      | map(attribute="address") }}'
+    addrs: '{{ [bootstrap_addr] + control_addrs + agent_addrs }}'
+    ports: '{{
+      rke2_firewall_internal_common_ports
+      + ([] if rke2_mode == "agent" else rke2_firewall_internal_server_ports) }}'
+  ansible.posix.firewalld:
+    permanent: true
+    immediate: true
+    rich_rule: 'rule family="ipv4" source address="{{ item.1 }}/32" port port="{{ item.0.port }}" protocol="{{ item.0.protocol }}" accept'
+    state: 'enabled'
+    zone: 'public'
+  loop: '{{ ports | product(addrs) }}'
+
+- name: Ensure internal kubernetes CIDRs are accepted
+  ansible.posix.firewalld:
+    permanent: true
+    immediate: true
+    source: '{{ item.source }}'
+    state: 'enabled'
+    zone: 'public'
+  loop: '{{ rke2_firewall_source_networks }}'

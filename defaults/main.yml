@@ -9,3 +9,5 @@ rke2_token: ''
 
 rke2_labels: []
 rke2_taints: []
+
+rke2_configure_firewall: true
