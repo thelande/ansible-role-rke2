@@ -11,6 +11,15 @@
 - ansible.builtin.import_tasks: firewall.yml  # noqa: name[missing]
   when: 'rke2_configure_firewall | bool'
 
+- name: Ensure NetworkManager is configured for canal
+  ansible.builtin.copy:
+    src: 'etc/NetworkManager/conf.d/rke2-canal.conf'
+    dest: '/etc/NetworkManager/conf.d/rke2-canal.conf'
+    mode: '0644'
+    owner: 'root'
+    group: 'root'
+  notify: 'Restart NetworkManager'
+
 - name: Ensure rancher repository configuration exists
   ansible.builtin.template:
     src: 'etc/yum.repos.d/rancher.repo.j2'
