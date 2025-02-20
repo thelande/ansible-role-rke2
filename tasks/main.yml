@@ -8,6 +8,10 @@
     name: 'epel-release'
   when: 'ansible_distribution != "RedHat"'
 
+- name: Ensure python firewall package is installed
+  ansible.builtin.package:
+    name: 'python3-firewall'
+
 - name: Ensure firewall public ports are open
   vars:
     port_proto: '{{ item.port ~ "/" ~ item.protocol }}'
