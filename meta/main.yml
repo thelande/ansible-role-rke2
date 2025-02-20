@@ -9,7 +9,7 @@ galaxy_info:
   platforms:
     - name: Fedora
       versions:
-        - all
+        - 'all'
     - name: Rocky
       versions:
         - 'all'
