@@ -6,6 +6,7 @@ rke2_etcdctl_version: 'v3.5.18'
 # rke2_mode: server or agent
 rke2_server: ''
 rke2_token: ''
+rke2_api_vip: ''
 
 rke2_labels: []
 rke2_taints: []

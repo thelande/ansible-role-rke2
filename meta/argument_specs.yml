@@ -13,6 +13,12 @@ argument_specs:
         description: 'The version of etcdclt to install on the servers.'
         default: 'v3.5.18'
 
+      rke2_api_vip:
+        type: 'str'
+        description:
+          - 'The virtual IP address of the Kubernetes control plane.'
+          - 'This IP will be added to the cluster certificate SAN, if set.'
+
       rke2_mode:
         type: 'str'
         description: 'The mode of the server.'
