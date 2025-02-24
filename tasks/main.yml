@@ -20,6 +20,9 @@
     group: 'root'
   notify: 'Restart NetworkManager'
 
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
 - name: Ensure rancher repository configuration exists
   ansible.builtin.template:
     src: 'etc/yum.repos.d/rancher.repo.j2'
